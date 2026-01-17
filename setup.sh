@@ -162,14 +162,15 @@ install_docker() {
     sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
     # Set up repository
-    # shellcheck source=/etc/os-release
-    . /etc/os-release
-
     ARCH="$(dpkg --print-architecture)"
+
+    # shellcheck disable=SC1091
+    . /etc/os-release
     CODENAME="$VERSION_CODENAME"
 
     echo "deb [arch=${ARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${CODENAME} stable" \
       | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
 
 
     # Install Docker
