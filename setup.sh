@@ -161,8 +161,8 @@ install_git() {
 
     # Configure Git
     if ask_yes_no "Do you want to configure Git (name and email)?"; then
-        read -p "Enter your Git username: " git_username
-        read -p "Enter your Git email: " git_email
+        read -r -p "Enter your Git username: " git_username < /dev/tty
+        read -r -p "Enter your Git email: " git_email < /dev/tty
         git config --global user.name "$git_username"
         git config --global user.email "$git_email"
         git config --global init.defaultBranch main
@@ -460,7 +460,7 @@ setup_ssh_key() {
         fi
     fi
 
-    read -p "Enter your email for SSH key: " ssh_email
+    read -r -p "Enter your email for SSH key: " ssh_email < /dev/tty
     ssh-keygen -t ed25519 -C "$ssh_email"
 
     print_success "SSH key generated"
