@@ -77,15 +77,26 @@ print_error() {
 }
 
 ask_yes_no() {
+    local prompt="$1"
+    local answer
+
     while true; do
-        read -r -p "$1 [y/n]: " yn < /dev/tty
-        case $yn in
-            [Yy]* ) return 0 ;;
-            [Nn]* ) return 1 ;;
-            * ) echo "Please answer y or n." < /dev/tty ;;
+        read -r -p "$prompt [Y/n]: " answer < /dev/tty
+        # Default YES (empty input)
+        case "${answer,,}" in
+            ""|y|yes)
+                return 0
+                ;;
+            n|no)
+                return 1
+                ;;
+            *)
+                echo "Please answer Y or N." < /dev/tty
+                ;;
         esac
     done
 }
+
 
 
 check_command() {
