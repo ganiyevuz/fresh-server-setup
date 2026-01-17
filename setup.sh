@@ -78,14 +78,15 @@ print_error() {
 
 ask_yes_no() {
     while true; do
-        read -p "$1 [y/n]: " yn
+        read -r -p "$1 [y/n]: " yn < /dev/tty
         case $yn in
-            [Yy]* ) return 0;;
-            [Nn]* ) return 1;;
-            * ) echo "Please answer y or n.";;
+            [Yy]* ) return 0 ;;
+            [Nn]* ) return 1 ;;
+            * ) echo "Please answer y or n." < /dev/tty ;;
         esac
     done
 }
+
 
 check_command() {
     if command -v "$1" &> /dev/null; then
