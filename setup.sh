@@ -1,33 +1,4 @@
 #!/bin/bash
-
-# =============================================================================
-# Server Setup Script for Ubuntu/Debian
-# Interactive installation of development tools
-#
-# Usage:
-#   ./setup.sh              # Interactive mode (asks for each component)
-#   ./setup.sh --all        # Install everything without prompts
-#   ./setup.sh --docker --nginx --uv   # Install specific components only
-#
-# Available flags:
-#   --all         Install all components
-#   --update      System update
-#   --essentials  Essential tools (curl, wget, vim, etc.)
-#   --git         Git
-#   --docker      Docker
-#   --python      Python3 & uv
-#   --uv          Alias for --python
-#   --nginx       Nginx
-#   --certbot     Certbot SSL
-#   --firewall    UFW firewall
-#   --fail2ban    Fail2ban
-#   --databases   Docker Compose database templates
-#   --ssh         SSH key generation
-#   --swap        Create swap file
-#   --timezone    Set timezone
-#   --help        Show this help
-# =============================================================================
-
 set -e
 
 # Colors for output
@@ -36,23 +7,6 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
-
-# Flags for CLI mode
-INSTALL_ALL=false
-INSTALL_UPDATE=false
-INSTALL_ESSENTIALS=false
-INSTALL_GIT=false
-INSTALL_DOCKER=false
-INSTALL_PYTHON=false
-INSTALL_NGINX=false
-INSTALL_CERTBOT=false
-INSTALL_FIREWALL=false
-INSTALL_FAIL2BAN=false
-INSTALL_DATABASES=false
-INSTALL_SSH=false
-INSTALL_SWAP=false
-INSTALL_TIMEZONE=false
-CLI_MODE=false
 
 # -----------------------------------------------------------------------------
 # Helper Functions
@@ -91,7 +45,7 @@ ask_yes_no() {
                 return 1
                 ;;
             *)
-                echo "Please answer Y or N." < /dev/tty
+                printf "%b\n" "Please answer Y or N."
                 ;;
         esac
     done
@@ -208,17 +162,22 @@ install_docker() {
     sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
     # Set up repository
-    echo \
-        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-        $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-        sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    # shellcheck source=/etc/os-release
+    . /etc/os-release
+
+    ARCH="$(dpkg --print-architecture)"
+    CODENAME="$VERSION_CODENAME"
+
+    echo "deb [arch=${ARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${CODENAME} stable" \
+      | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
 
     # Install Docker
     sudo apt update
     sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
     # Add current user to docker group
-    sudo usermod -aG docker $USER
+    sudo usermod -aG docker "$USER"
 
     print_success "Docker installed"
     print_warning "Log out and back in for docker group changes to take effect"
