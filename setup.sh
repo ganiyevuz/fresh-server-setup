@@ -39,6 +39,22 @@ check_command() {
     command -v "$1" &>/dev/null
 }
 
+check_uv() {
+    command -v uv &>/dev/null \
+        || [ -x "$HOME/.local/bin/uv" ] \
+        || [ -x "$HOME/.cargo/bin/uv" ]
+}
+
+uv_version() {
+    if command -v uv &>/dev/null; then
+        uv --version 2>/dev/null | cut -d' ' -f2
+    elif [ -x "$HOME/.local/bin/uv" ]; then
+        "$HOME/.local/bin/uv" --version 2>/dev/null | cut -d' ' -f2
+    elif [ -x "$HOME/.cargo/bin/uv" ]; then
+        "$HOME/.cargo/bin/uv" --version 2>/dev/null | cut -d' ' -f2
+    fi
+}
+
 is_service_active() {
     systemctl is-active --quiet "$1" 2>/dev/null
 }
@@ -81,8 +97,8 @@ analyze_system() {
         echo -e "  ${RED}✗${NC} Python3: not installed"
     fi
 
-    if check_command uv; then
-        echo -e "  ${GREEN}✓${NC} uv: $(uv --version 2>/dev/null | cut -d' ' -f2)"
+    if check_uv; then
+        echo -e "  ${GREEN}✓${NC} uv: $(uv_version)"
     else
         echo -e "  ${RED}✗${NC} uv: not installed"
     fi
@@ -228,7 +244,7 @@ install_docker() {
 # -----------------------------------------------------------------------------
 
 install_python_uv() {
-    check_command python3 && check_command uv && return
+    check_command python3 && check_uv && return
 
     print_header "Python & uv Package Manager"
 
@@ -239,7 +255,7 @@ install_python_uv() {
         fi
     fi
 
-    if ! check_command uv; then
+    if ! check_uv; then
         if ask_yes_no "Do you want to install uv (fast Python package manager)?"; then
             curl -LsSf https://astral.sh/uv/install.sh | sh
             print_success "uv installed"
@@ -481,7 +497,7 @@ print_summary() {
     check_command git          && echo -e "  ${GREEN}✓${NC} Git $(git --version 2>/dev/null | cut -d' ' -f3)"
     check_command docker       && echo -e "  ${GREEN}✓${NC} Docker $(docker --version 2>/dev/null | cut -d' ' -f3 | tr -d ',')"
     check_command python3      && echo -e "  ${GREEN}✓${NC} Python $(python3 --version 2>/dev/null | cut -d' ' -f2)"
-    check_command uv           && echo -e "  ${GREEN}✓${NC} uv $(uv --version 2>/dev/null | cut -d' ' -f2)"
+    check_uv                   && echo -e "  ${GREEN}✓${NC} uv $(uv_version)"
     check_command nginx        && echo -e "  ${GREEN}✓${NC} Nginx"
     check_command certbot      && echo -e "  ${GREEN}✓${NC} Certbot"
     check_command fail2ban-client && echo -e "  ${GREEN}✓${NC} Fail2ban"
